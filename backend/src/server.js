@@ -5,11 +5,11 @@ const fs = require('fs');
 const docxPdf = require('docx-pdf');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000; // Use the PORT environment variable or default to 5000
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Allow cross-origin requests
+app.use(express.json()); // Parse JSON request bodies
 
 // Configure Multer for file uploads
 const upload = multer({ dest: 'uploads/' });
@@ -43,11 +43,14 @@ app.post('/upload', upload.single('file'), (req, res) => {
       return res.status(500).json({ error: 'Conversion failed' });
     }
 
-    // Return metadata and download URL
+    // Get the server's public URL (Render's domain or localhost)
+    const serverUrl = req.protocol + '://' + req.get('host');
+
+    // Return metadata and absolute download URL
     res.json({
       message: 'File uploaded and converted successfully!',
       metadata,
-      downloadUrl: `/download/${file.filename}.pdf`, // Provide a download URL
+      downloadUrl: `${serverUrl}/download/${file.filename}.pdf`, // Absolute URL
     });
 
     // Optional: Clean up temporary files after some delay
